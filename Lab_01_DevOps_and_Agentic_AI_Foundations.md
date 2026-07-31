@@ -187,7 +187,6 @@ enrolment-app-open-ai/
 Use vscode (Or other IDE of your choice) terminal
 
 ```bash
-mkdir enrolment-app-open-ai
 cd enrolment-app-open-ai
 mkdir templates
 mkdir css
@@ -198,8 +197,6 @@ mkdir css
 <summary>Create Files Using Linux CLI</summary>
 
 ```bash
-mkdir templates css
-
 touch requirements.txt
 touch app.py
 touch init_db.py
