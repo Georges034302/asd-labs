@@ -40,6 +40,7 @@ This guide defines the baseline runtime/config needed across Labs 01-11:
 <summary>Create and clone your course repository</summary>
 
 Create a **public GitHub repository** named:
+
 Enable creating README.md file during setup
 ```text
 enrolment-app-open-ai
