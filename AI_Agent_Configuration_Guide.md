@@ -24,6 +24,7 @@ This guide defines the baseline runtime/config needed across Labs 01-11:
 | Tool | Requirement |
 | --- | --- |
 | VS Code | Recommended |
+| Git Bash (Windows) | Required |
 | AWS Kiro | Optional |
 | Python 3.11+ | Required |
 | Ollama | Required |
@@ -38,8 +39,8 @@ This guide defines the baseline runtime/config needed across Labs 01-11:
 <details>
 <summary>Create and clone your course repository</summary>
 
-Create a **private GitHub repository** named:
-
+Create a **public GitHub repository** named:
+Enable creating README.md file during setup
 ```text
 enrolment-app-open-ai
 ```
