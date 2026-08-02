@@ -1227,33 +1227,24 @@ LOOP COMPLETE
 <details>
 <summary>Improve and Record</summary>
 
-# Agentic Loop Improvement Cycle
-
-Work in groups of 5 for this activity.
-
-You must treat the agentic loop as a real end-to-end validation exercise. Do not treat it as a simulated or fake check.
+- Work in groups of 5 for this activity.
+- Start `app.py` in a second terminal
+- Treat the agentic loop as a real end-to-end validation exercise. 
 
 **Focus**
 
 This cycle has three main focuses:
-
-1. Database check  
-   Verify the database records and confirm they match the expected student data.
-
-2. Live endpoint check  
-   Start the Flask app locally and send real HTTP requests to the application endpoints. Inspect the actual responses from the running app.
-
-3. Review agent  
-   The review agent must use evidence from both the database check and the live endpoint check. It must not rely only on code reading or assumptions.
+1. Database check - Verify the database records and confirm they match the expected student data.
+2. Live endpoint check - Send real HTTP requests to the application endpoints. Inspect the actual responses from the running app.
+3. Review agent - The review agent must use evidence from both the database check and the live endpoint check. 
 
 **Required behaviour for the implementation agent**
 
 The implementation agent must:
-- start the Flask app locally
-- run the app using Python
+- check that the Flask app locally
 - send real HTTP requests to the application endpoints
 - inspect the actual responses returned by those endpoints
-- evaluate the implementation using live server behaviour, not only database checks or static code inspection
+- evaluate the implementation using live server behaviour
 
 **Required behaviour for the review agent**
 
@@ -1261,7 +1252,6 @@ The review agent must:
 - review the implementation agent’s recommendations using evidence from the running app
 - check whether the proposed change would work against the live HTTP endpoints
 - validate endpoint behaviour directly
-- reject recommendations that are not supported by real request/response evidence
 
 **Required workflow**
 
@@ -1273,9 +1263,7 @@ For each improvement cycle:
 
 **Improve and Record**
 
-Apply one improvement based on evidence.
-
-After applying the improvement:
+After applying the improvements:
 
 1. Rerun the agentic loop.
 2. Rerun endpoint tests.
