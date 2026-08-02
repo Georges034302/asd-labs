@@ -179,6 +179,7 @@ No new application should be created from scratch.
 flask
 openai
 python-dotenv
+requests
 ```
 </details>
 
