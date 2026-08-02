@@ -1266,8 +1266,7 @@ For each improvement cycle:
 After applying the improvements:
 
 1. Rerun the agentic loop.
-2. Rerun endpoint tests.
-3. Record the before/after result.
+2. Record the before/after result.
 
 Record:
 
