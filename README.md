@@ -60,7 +60,7 @@ Upon completing these laboratories, students will gain practical experience in:
 
 ## License
 
-This repository is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details.
+This repository is licensed under the **MIT License**. See the [LICENSE.md](LICENSE.md) file for details.
 
 ---
 
