@@ -793,6 +793,7 @@ import os
 import sqlite3
 from pathlib import Path
 
+import requests
 from dotenv import load_dotenv
 from openai import OpenAI
 
@@ -905,6 +906,32 @@ def observe_subject_search(subject_code):
     )
 
 
+def observe_live_endpoints():
+    results = []
+
+    try:
+        response = requests.get(
+            "http://127.0.0.1:5000/students",
+            timeout=5
+        )
+        results.append(f"/students -> HTTP {response.status_code}")
+    except Exception as exc:
+        results.append(f"/students -> error: {exc}")
+
+    try:
+        response = requests.get(
+            "http://127.0.0.1:5000/students/by-subject?subject_code=ASD101",
+            timeout=5
+        )
+        results.append(
+            f"/students/by-subject -> HTTP {response.status_code}"
+        )
+    except Exception as exc:
+        results.append(f"/students/by-subject -> error: {exc}")
+
+    return results
+
+
 def call_model(
     model_name,
     system_prompt,
@@ -974,6 +1001,14 @@ def get_implementation_agent_advice(observe_message):
         "Task:\n"
         "Review ONLY the existing subject-code search feature.\n\n"
 
+        "Check whether the Flask app is running. If it is running, make real "
+        "HTTP requests to the relevant endpoints such as /students, "
+        "/students/by-id, and /students/by-subject and inspect the actual "
+        "responses. Also check the local database. Use that live endpoint "
+        "evidence from the running app. Do not rely only on database checks "
+        "or code reading. If the app is not responding, say: Unable to "
+        "verify live endpoint behavior.\n\n"
+
         "Rules:\n"
         "- Do not invent new database fields.\n"
         "- Do not invent new endpoints.\n"
@@ -1012,6 +1047,11 @@ def get_review_agent_advice(
 
         f"Validation Evidence:\n"
         f"{observe_message}\n\n"
+
+        "Before reviewing the recommendation, use the validation evidence "
+        "provided. Review only the implementation-agent recommendation and "
+        "identify evidence-backed risks or corrections. If no evidence-backed "
+        "risk exists, say so.\n\n"
 
         "Application Scope:\n"
         "- database fields: student_id, "
@@ -1126,9 +1166,12 @@ def main():
 
     print(msg_subject)
 
+    live_results = observe_live_endpoints()
+
     observe_message = (
         f"{msg_data}. "
-        f"{msg_subject}."
+        f"{msg_subject}. "
+        f"Live endpoint checks: " + "; ".join(live_results)
     )
 
     print()
@@ -1168,20 +1211,14 @@ def main():
     else:
         print()
         print(review_error)
-
     print()
     print("HUMAN DECISION")
-
     decision = human_review()
-
     print()
     print(f"Decision: {decision}")
-
     adapt(decision)
-
     print()
     print("LOOP COMPLETE")
-
 
 if __name__ == "__main__":
     main()
@@ -1245,7 +1282,7 @@ The implementation agent must:
 - send real HTTP requests to the application endpoints
 - inspect the actual responses returned by those endpoints
 - evaluate the implementation using live server behaviour
-
+  
 **Required behaviour for the review agent**
 
 The review agent must:
