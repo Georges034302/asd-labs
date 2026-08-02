@@ -1,8 +1,8 @@
 # Lab 02 - Environment and Multi-Model Workflows
 
 **Course:** Advanced Software Development with Agentic AI  
-**Theme:** Environment Readiness and Multi-Model Workflows  
-**Primary IDE:** VS Code  (Optional IDE: AWS Kiro). 
+**Theme:** Environment Readiness and Multi-Model Workflows  \
+**Primary IDE:** VS Code  \
 **AI Agent Runtime:** Ollama  
 **Implementation Model:** Qwen 2.5 0.5B  
 **Review Model:** Llama 3.1 8B  
