@@ -29,6 +29,7 @@ The repository currently includes:
 |------|-------|
 | Lab 01 | DevOps and Agentic AI Foundations |
 | Lab 02 | Environment and Multi-Model Workflows |
+| Lab 03 | Prompt Engineering, Specifications, and Context Management |
 | *More labs will be added throughout the course.* |
 
 ---
