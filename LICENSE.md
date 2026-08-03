@@ -4,8 +4,7 @@ Advanced Software Development — Laboratory Materials
 
 This repository and all associated laboratory exercises, documentation,
 source code, scripts, diagrams, images, examples, and other materials
-(collectively, the "Materials") are the exclusive intellectual property of
-Georges Bou Ghantous.
+(collectively, the "Materials") are the exclusive intellectual property.
 
 RESTRICTIONS
 
@@ -26,7 +25,7 @@ permission from the copyright holder:
 
 4. Distribution
    Redistributing, publishing, uploading, selling, licensing, sublicensing,
-   renting, or otherwise making the Materials available to third parties.
+   renting, or otherwise making the Materials available to third parties. search engines, and AI (like ChatGPT, Gemini, ...).
 
 5. Commercial Use
    Using the Materials, in whole or in part, in any commercial product,
