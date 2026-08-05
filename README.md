@@ -32,7 +32,13 @@ The repository currently includes:
 | Lab 03 | Prompt Engineering, Specifications, and Context Management |
 | Lab 04 | Software Architecture and Design Patterns for Agentic AI Systems |
 | Lab 05 | DevOps Pipelines and AI-Assisted CI/CD |
+| Lab 06 | Release 0 Showcase |
 | Lab 07 | MCP and Enterprise Integrations |
+| Lab 08 | RAG and Enterprise Context Pipelines |
+| Lab 09 | Release 1 Showcase |
+| Lab 10 | Multi-Agent Systems and Specialized Agent Coordination |
+| Lab 11 | Testing, Deployment and Agentic SDLC Operations |
+| Lab 12 | Release 2 Showcase |
 | *More labs will be added throughout the course.* |
 
 ---
