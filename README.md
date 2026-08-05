@@ -31,6 +31,7 @@ The repository currently includes:
 | Lab 02 | Environment and Multi-Model Workflows |
 | Lab 03 | Prompt Engineering, Specifications, and Context Management |
 | Lab 04 | Software Architecture and Design Patterns for Agentic AI Systems |
+| Lab 05 | DevOps Pipelines and AI-Assisted CI/CD |
 | *More labs will be added throughout the course.* |
 
 ---
