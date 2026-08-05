@@ -39,7 +39,6 @@ The repository currently includes:
 | Lab 10 | Multi-Agent Systems and Specialized Agent Coordination |
 | Lab 11 | Testing, Deployment and Agentic SDLC Operations |
 | Lab 12 | Release 2 Showcase |
-| *More labs will be added throughout the course.* |
 
 ---
 
