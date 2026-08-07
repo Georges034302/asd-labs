@@ -2,11 +2,11 @@
 
 **Course:** Advanced Software Development with Agentic AI (ASD)  
 **Theme:** Prompt Engineering, Specifications, and Context Management  
-**Primary IDE:** VS Code (Optional IDE: AWS Kiro)  
+**Primary IDE:** VS Code 
 **AI Runtime:** Ollama  
 **Implementation Agent:** Qwen 2.5 0.5B  
 **Review Agent:** Llama 3.1 8B  
-**Duration:** 60 minutes
+**Duration:** 120 minutes
 
 ---
 
@@ -15,7 +15,13 @@
 <details>
 <summary>Goal</summary>
 
-Extend Lab 02 by externalizing prompt text into files and adding context-based response flow.
+Extend Lab 02 by externalizing prompt text into files, adding a context-aware response flow, and running a multi-agent improvement cycle driven by real database and live-endpoint evidence.
+
+**Task 1:** Implement the context-aware `/ask-with-context` endpoint in `app.py` — see the TODO comments under **Section 4. Application Setup and Development -> Backend Flask API**.
+
+**Task 2:** Implement the `get_implementation_agent_advice` and `get_review_agent_advice` functions in `agentic_loop.py` — see the TODO comments under **Section 6. Agentic Loop -> Python Agentic Loop**.
+
+**Task 3:** Run the improvement cycle and apply one evidence-based prompt fix — see **Section 7. Improvement Cycle -> Improve and Record**.
 
 </details>
 
@@ -55,7 +61,6 @@ Complete first:
 
 - Lab 01
 - Lab 02
-- AI Agent Configuration Guide: [AI Agent Configuration Guide](../docs/AI_Agent_Configuration_Guide.md)
 
 Required models:
 
@@ -96,25 +101,14 @@ enrolment-app-open-ai/
 <details>
 <summary>Create Prompt Folder and Files in the App Folder</summary>
 
-Linux/macOS:
-
 ```bash
-cd enrolment-app-open-ai
+# Ensure that you are working in the directory: enrolment-app-open-ai
 mkdir -p prompts
-touch prompts/implementation_system_prompt.txt prompts/implementation_task_prompt.txt prompts/context_qa_task_prompt.txt
-touch prompts/review_system_prompt.txt prompts/review_task_prompt.txt
-```
-
-Windows PowerShell:
-
-```powershell
-cd enrolment-app-open-ai
-mkdir prompts
-New-Item prompts/implementation_system_prompt.txt -ItemType File
-New-Item prompts/implementation_task_prompt.txt -ItemType File
-New-Item prompts/context_qa_task_prompt.txt -ItemType File
-New-Item prompts/review_system_prompt.txt -ItemType File
-New-Item prompts/review_task_prompt.txt -ItemType File
+touch prompts/implementation_system_prompt.txt 
+touch prompts/implementation_task_prompt.txt 
+touch prompts/context_qa_task_prompt.txt
+touch prompts/review_system_prompt.txt 
+touch prompts/review_task_prompt.txt
 ```
 
 </details>
@@ -193,7 +187,7 @@ Validation Evidence:
 {{VALIDATION_EVIDENCE}}
 
 Task:
-Review ONLY the existing subject-code search feature using the validation evidence above.
+Review the existing subject-code search feature and the live endpoint check results using the validation evidence above.
 
 Base your answer only on the Validation Evidence above — it already reflects real HTTP requests made to the running Flask app and real database checks. Do not claim to have made requests yourself, and do not rely on assumptions beyond that evidence. If the evidence indicates the app is not responding, say: Unable to verify live endpoint behavior.
 
@@ -456,6 +450,11 @@ def ask_local_agent():
         )
 
 
+# TASK 1: Implement the context-aware /ask-with-context endpoint. It must load
+# the implementation system prompt and context QA task prompt from files,
+# merge the task prompt with the user's question, send both to the local
+# Ollama model, and return the model's answer as HTML (matching /ask's
+# error-handling pattern for a failed or unavailable model).
 @app.route("/ask-with-context", methods=["POST"])
 def ask_with_context():
     question = request.form.get("question", "").strip()
@@ -463,43 +462,20 @@ def ask_with_context():
     if not question:
         return "<p>Question is required.</p>", 400
 
-    try:
-        system_prompt = load_prompt("implementation_system_prompt.txt")
-        task_prompt = load_prompt("context_qa_task_prompt.txt")
+    # TODO: Load "implementation_system_prompt.txt" and
+    #       "context_qa_task_prompt.txt" using load_prompt().
 
-        final_prompt = f"""
-{task_prompt}
+    # TODO: Build the final prompt by combining the task prompt with the
+    #       user's question.
 
-User Question:
+    # TODO: Call client.chat.completions.create() using OLLAMA_MODEL, the
+    #       system prompt, and the final prompt (max_tokens=300, temperature=0).
 
-{question}
-"""
+    # TODO: Return the model's answer wrapped in "<p>...</p>".
 
-        response = client.chat.completions.create(
-            model=OLLAMA_MODEL,
-            messages=[
-                {
-                    "role": "system",
-                    "content": system_prompt
-                },
-                {
-                    "role": "user",
-                    "content": final_prompt
-                }
-            ],
-            max_tokens=300,
-            temperature=0,
-        )
-
-        answer = response.choices[0].message.content
-        return f"<p>{answer}</p>"
-
-    except Exception as exc:
-        return (
-            "<p>Context-aware request failed.</p>"
-            f"<pre>{exc}</pre>",
-            503,
-        )
+    # TODO: Catch exceptions and return "<p>Context-aware request failed.</p>"
+    #       plus the exception details, with HTTP status 503.
+    pass
 
 
 if __name__ == "__main__":
@@ -705,27 +681,11 @@ import requests
 from dotenv import load_dotenv
 from openai import OpenAI
 
+# ============================= Agents Env Setup =============================
 ENV_PATH = Path(__file__).with_name(".env")
 load_dotenv(dotenv_path=ENV_PATH)
 
 PROMPT_DIR = Path(__file__).with_name("prompts")
-
-
-def load_prompt(filename):
-    prompt_path = PROMPT_DIR / filename
-    return prompt_path.read_text(encoding="utf-8").strip()
-
-
-PLAN = {
-    "goal": "Validate Student Enrolment App behavior using a local multi-agent workflow",
-    "checks": [
-        "/students",
-        "/students/{student_id}",
-        "/students/by-id",
-        "/students/by-subject",
-        "/ask"
-    ]
-}
 
 DATABASE_NAME = Path(__file__).with_name("enrolment.db")
 
@@ -744,7 +704,21 @@ REVIEW_MODEL = os.getenv(
     "llama3.1:8b"
 )
 
+# ==================================== Plan ====================================
+PLAN = {
+    "goal": "Validate Student Enrolment App behavior using a local multi-agent workflow",
+    "db_plan": [
+        "Check student data quality (10 records, valid required fields)",
+        "Check subject-code search returns matching students"
+    ],
+    "endpoints_plan": [
+        "GET /students - get all students",
+        "GET /students/by-id - get student by id",
+        "GET /students/by-subject - get students by subject code"
+    ]
+}
 
+# ================================ Observe: Database ================================
 def validate_student(student):
     student_id, student_name, subject_code = student
 
@@ -779,11 +753,18 @@ def observe_data_quality():
     if len(students) != 10:
         return False, "Expected 10 students"
 
+    all_ok = True
+
     for student in students:
         ok, msg = validate_student(student)
+        status = "OK" if ok else f"FAIL: {msg}"
+        print(f"  Checked student_id={student[0]} -> {status}")
 
         if not ok:
-            return False, msg
+            all_ok = False
+
+    if not all_ok:
+        return False, "One or more student records failed validation"
 
     return True, "Data validation passed"
 
@@ -807,11 +788,18 @@ def observe_subject_search(subject_code):
     conn.close()
 
     if not students:
+        print(f"  Checked subject_code={subject_code} -> FAIL: no students found")
         return False, (
             f"No students found for subject code {subject_code}"
         )
 
     for student in students:
+        status = (
+            "OK" if student[2] == subject_code
+            else f"FAIL: unexpected subject code {student[2]}"
+        )
+        print(f"  Checked student_id={student[0]} -> {status}")
+
         if student[2] != subject_code:
             return False, (
                 f"Unexpected subject code found: {student[2]}"
@@ -839,6 +827,7 @@ def get_sample_student():
     return row
 
 
+# ============================= Observe: Live Endpoints ==============================
 def observe_live_endpoints(sample_student):
     results = []
 
@@ -852,12 +841,15 @@ def observe_live_endpoints(sample_student):
                 method, url, timeout=5, **kwargs
             )
             content_ok = bool(response.text and response.text.strip())
-            results.append(
+            line = (
                 f"{label} -> HTTP {response.status_code}, "
                 f"content_ok={content_ok}"
             )
         except Exception as exc:
-            results.append(f"{label} -> error: {exc}")
+            line = f"{label} -> error: {exc}"
+
+        print(f"  Checked {line}")
+        results.append(line)
 
     check("/students", "GET", "http://127.0.0.1:5000/students")
 
@@ -873,8 +865,12 @@ def observe_live_endpoints(sample_student):
             f"http://127.0.0.1:5000/students/by-id?student_id={student_id}"
         )
     else:
-        results.append("/students/<student_id> -> skipped: no sample student found")
-        results.append("/students/by-id -> skipped: no sample student found")
+        skipped_id = "/students/<student_id> -> skipped: no sample student found"
+        skipped_by_id = "/students/by-id -> skipped: no sample student found"
+        print(f"  Checked {skipped_id}")
+        print(f"  Checked {skipped_by_id}")
+        results.append(skipped_id)
+        results.append(skipped_by_id)
 
     if subject_code is not None:
         check(
@@ -883,7 +879,9 @@ def observe_live_endpoints(sample_student):
             f"http://127.0.0.1:5000/students/by-subject?subject_code={subject_code}"
         )
     else:
-        results.append("/students/by-subject -> skipped: no sample student found")
+        skipped_subject = "/students/by-subject -> skipped: no sample student found"
+        print(f"  Checked {skipped_subject}")
+        results.append(skipped_subject)
 
     check(
         "/ask",
@@ -895,12 +893,8 @@ def observe_live_endpoints(sample_student):
     return results
 
 
-def call_model(
-    model_name,
-    system_prompt,
-    user_prompt,
-    max_tokens=120
-):
+# =============================== Model Call Helper ================================
+def call_model( model_name, system_prompt, user_prompt, max_tokens=120):
     try:
         client = OpenAI(
             base_url=OLLAMA_BASE_URL,
@@ -937,37 +931,38 @@ def call_model(
         )
 
 
+# TASK 2: ======================== Implementation & Review Agents ===========================
+
+def load_prompt(filename):
+    prompt_path = PROMPT_DIR / filename
+    return prompt_path.read_text(encoding="utf-8").strip()
+
+# TASK 2: Implement the implementation-agent and review-agent advice
+# functions. Each must load its task/system prompt files, substitute the
+# evidence placeholders, and call call_model() with the correct model,
+# system prompt, task prompt, and max_tokens.
 def get_implementation_agent_advice(observe_message):
-    task_prompt = load_prompt("implementation_task_prompt.txt").replace(
-        "{{VALIDATION_EVIDENCE}}", observe_message
-    )
+    # TODO: Load "implementation_task_prompt.txt" and replace the
+    #       "{{VALIDATION_EVIDENCE}}" placeholder with observe_message.
 
-    return call_model(
-        IMPLEMENTATION_MODEL,
-        load_prompt("implementation_system_prompt.txt"),
-        task_prompt,
-        max_tokens=120
-    )
+    # TODO: Call call_model() using IMPLEMENTATION_MODEL, the loaded
+    #       "implementation_system_prompt.txt", the task prompt, and
+    #       max_tokens=120. Return its result.
+    pass
 
 
-def get_review_agent_advice(
-    implementation_message,
-    observe_message
-):
-    task_prompt = (
-        load_prompt("review_task_prompt.txt")
-        .replace("{{IMPLEMENTATION_RECOMMENDATION}}", implementation_message)
-        .replace("{{VALIDATION_EVIDENCE}}", observe_message)
-    )
+def get_review_agent_advice(implementation_message, observe_message):
+    # TODO: Load "review_task_prompt.txt" and replace both the
+    #       "{{IMPLEMENTATION_RECOMMENDATION}}" and "{{VALIDATION_EVIDENCE}}"
+    #       placeholders.
 
-    return call_model(
-        REVIEW_MODEL,
-        load_prompt("review_system_prompt.txt"),
-        task_prompt,
-        max_tokens=150
-    )
+    # TODO: Call call_model() using REVIEW_MODEL, the loaded
+    #       "review_system_prompt.txt", the task prompt, and
+    #       max_tokens=150. Return its result.
+    pass
 
 
+# =============================== Human Review & Adapt ================================
 def human_review():
     print()
     print("HUMAN REVIEW")
@@ -1007,6 +1002,7 @@ def adapt(decision):
         )
 
 
+# ================================= Main / Loop Entry ================================
 def main():
     print("=" * 60)
     print("ASD LAB 02 AGENTIC LOOP")
@@ -1020,21 +1016,23 @@ def main():
     print("ACT")
     print("Check local database records")
 
-    ok_data, msg_data = observe_data_quality()
-
     print()
-    print("OBSERVE")
+    print("OBSERVE: Database Check")
+    ok_data, msg_data = observe_data_quality()
     print(msg_data)
 
     sample_student = get_sample_student()
     sample_subject_code = sample_student[1] if sample_student else "ASD101"
 
+    print()
+    print("OBSERVE: Subject Search Check")
     ok_subject, msg_subject = observe_subject_search(
         sample_subject_code
     )
-
     print(msg_subject)
 
+    print()
+    print("OBSERVE: Live Endpoint Check")
     live_results = observe_live_endpoints(sample_student)
 
     observe_message = (
@@ -1107,14 +1105,12 @@ if __name__ == "__main__":
 The agentic loop makes live HTTP requests against the running Flask app, so start `app.py` first in a separate terminal (leave it running):
 
 ```bash
-cd enrolment-app-open-ai
 .venv/bin/python app.py
 ```
 
 In a second terminal, run the agentic loop (no need to run `init_db.py` again if you already seeded the database earlier):
 
 ```bash
-cd enrolment-app-open-ai
 .venv/bin/python agentic_loop.py
 ```
 
@@ -1140,40 +1136,39 @@ LOOP COMPLETE
 <details>
 <summary>Improve and Record</summary>
 
-Work in groups of 5. Refer to step 6 results.
+**TASK 3:** Diagnose the run output from step 6, apply one evidence-based prompt fix, rerun the loop, and record the result.
 
-**Focus:**
-
-1. Database check — verify records match the expected student data.
-2. Live endpoint check — send real HTTP requests and inspect the actual responses.
-3. Review agent — must use evidence from both the database check and the live endpoint check.
-
-**Implementation agent must:**
-
-- Confirm the Flask app is running locally.
-- Base its recommendation only on the supplied live-endpoint and database evidence, not assumptions.
-- Propose one evidence-based improvement, scoped to the subject-code search feature.
-
-**Review agent must:**
-
-- Review the implementation agent's recommendation using that same evidence.
-- Identify evidence-backed risks or corrections, or confirm none exist.
-
-**Workflow:**
+**Sample run (for reference):**
 
 ```text
-PLAN -> OBSERVE (database + live endpoints) -> IMPLEMENTATION AGENT -> REVIEW AGENT -> HUMAN REVIEW -> ADAPT
+OBSERVE: Live Endpoint Check
+  /ask -> error: Read timed out. (read timeout=5)
+
+IMPLEMENTATION AGENT
+No evidence-backed improvement identified.
+
+REVIEW AGENT
+Risk: Read timeout error on /ask endpoint indicates potential performance issue.
+Correction: Increase read timeout value for /ask endpoint.
+Retest: Repeat validation after implementing increased read timeout value.
+
+HUMAN DECISION
+Decision: 3 (Reject)
 ```
+
+**Note:** `qwen2.5:0.5b` is a small model — when it can't confidently tie evidence to a safe, in-scope fix, it defaults to "No evidence-backed improvement identified" rather than guessing.
+
+**Why reject:** the review agent flagged the `/ask` timeout, but the improvement scope is subject-code search only. `review_task_prompt.txt` gets the full live-endpoint evidence with no scope limit, so it commented on an endpoint the implementation agent was never evaluating.
 
 **Steps:**
 
-1. Choose one prompt file to improve: 
+1. Choose one prompt file to improve:
     - implementation system
     - implementation task
     - context QA task
     - review system
     - review task.
-2. Apply the change.
+2. Apply the change. Example fix for the scope issue above: add a rule to `review_task_prompt.txt` — "Only raise risks tied to the subject-code search feature described in the Implementation Recommendation; ignore evidence about unrelated endpoints."
 3. Rerun the endpoint tests and the agentic loop.
 4. Record the result below.
 
@@ -1201,12 +1196,14 @@ Human decision:
 | qwen2.5:0.5b installed | Yes | | |
 | llama3.1:8b installed | Yes | | |
 | Context form added to frontend | Yes | | |
-| /ask-with-context works | Yes | | |
+| Task 1: /ask-with-context works | Yes | | |
 | NFR: by-subject <= 500ms (19/20 requests) | Pass | | |
-| Agentic loop live endpoint checks | All HTTP 200 | | |
-| Implementation agent output | Returned | | |
-| Review agent output | Returned | | |
-| Improvement cycle completed | Recorded | | |
+| Task 2: Agentic loop live endpoint checks | All HTTP 200 | | |
+| Task 2: Implementation agent output | Returned | | |
+| Task 2: Review agent output | Returned | | |
+| Task 3: Prompt fix applied and rerun | Recorded | | |
+| Task 3: /ask endpoint responds after fix | HTTP 200, no timeout | | |
+| Task 3: Human decision recorded | Recorded | | |
 
 </details>
 
