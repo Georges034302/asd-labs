@@ -6,7 +6,7 @@
 **AI Agent Runtime:** Ollama  
 **Implementation Model:** Qwen 2.5 0.5B  
 **Review Model:** Llama 3.1 8B  
-**Duration:** 60 minutes  
+**Duration:** 120 minutes  
 
 ---
 
