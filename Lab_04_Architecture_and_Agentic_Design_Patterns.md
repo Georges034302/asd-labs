@@ -4,7 +4,7 @@
 **Theme:** Architecture and Agentic Decision Patterns \
 **Primary IDE:** VS Code \
 **AI Runtime:** Ollama \
-**Duration:** 60 Minutes
+**Duration:** 120 Minutes
 
 ## 1. Overview
 
